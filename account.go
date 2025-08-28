@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	// "fmt"
 	"os"
 	"strconv"
@@ -84,13 +85,16 @@ func (accounts *Accounts) showInfo(account Account) {
 	table.Render()
 }
 
-func (accounts *Accounts) createNewAccount(accountHolderName string, accountNum string, balance int) {
-	account := Account{
-		User: accountHolderName,
-		AccountNo: accountNum,
-		Balance: balance,
+func (accounts *Accounts) createNewAccount(accountHolderName string, accountNum string, balance int) error {
+	if err := accounts.findAccount(accountNum); err == nil {
+		account := Account{
+			User: accountHolderName,
+			AccountNo: accountNum,
+			Balance: balance,
+		}
+		*accounts = append(*accounts, account)
 	}
-	*accounts = append(*accounts, account)
+	return errors.New("this account already exists")
 }
 
 func (accounts *Accounts) addBalance(accountNum string, balance int) error {
@@ -102,8 +106,12 @@ func (accounts *Accounts) addBalance(accountNum string, balance int) error {
 	return errors.New("error account does not exist")
 }
 
-func (accounts *Accounts) spendBalance(accountNum string, balance int) error{
+func (accounts *Accounts) spendBalance(accountNum string, balance int) error {
 	if err := accounts.findAccount(accountNum); err != nil {
+		if balance > (*accounts)[*err].Balance {
+			fmt.Println("you don't have enough money")
+			return errors.New("you don't have enough balance")
+		}
 		(*accounts)[*err].Balance -= balance
 		record.save(&(*accounts)[*err], -balance)
 		return nil
@@ -121,8 +129,43 @@ func (accounts *Accounts) printAllAccount() {
 		balance := strconv.Itoa(a.Balance)
 		table.AddRow(strconv.Itoa(index), name, number, balance)
 	}
-
 	table.Render()
 }
+
+func (accounts *Accounts) deleteAccount(accountNum string) error{
+	if err := accounts.findAccount(accountNum); err != nil {
+		a := *accounts
+		*accounts = append(a[:*err], a[*err+1:]...) //start from 0 to before index, and skip specify index to last index
+		record.deleteRecords(accountNum)
+		return nil
+	}
+	return errors.New("account does not exist")
+}
+
+func (accounts *Accounts) changeAccountUsername(username string, accountNum string) error{
+	acc := *accounts
+	err := accounts.findAccount(accountNum)
+	if err == nil {
+		fmt.Println("cannot change username")
+		return errors.New("cannot change username")
+	}
+	acc[*err].User = username
+	return nil
+}
+
+func (accounts *Accounts) changeAccountNumber(accountNumOld string, accountNumNew string) error {
+	acc := *accounts
+	errNew := accounts.findAccount(accountNumNew); if errNew != nil {
+		fmt.Println("account already exists")
+		return nil
+	}
+
+	errOld := accounts.findAccount(accountNumOld); if errOld != nil {
+		acc[*errOld].AccountNo = accountNumNew
+	}
+	return nil
+}
+
+
 
 

@@ -1,20 +1,11 @@
 [
  {
-  "Amount": 1000,
+  "Amount": -10,
   "Account": {
    "User": "dynann",
    "AccountNo": "123",
-   "Balance": 2000
+   "Balance": 90
   },
-  "Date": "2025-08-26T16:17:14.361401+07:00"
- },
- {
-  "Amount": -200,
-  "Account": {
-   "User": "dynann",
-   "AccountNo": "123",
-   "Balance": 1800
-  },
-  "Date": "2025-08-26T16:44:50.3185604+07:00"
+  "Date": "2025-08-28T14:28:16.4642674+07:00"
  }
 ]

@@ -38,3 +38,16 @@ func (records *Records) print() {
 	}
 	table.Render()
 }
+
+func (records *Records) deleteRecords(accountNum string) {
+    rec := *records
+    newRec := rec[:0] // reuse underlying array (in-place)
+
+    for _, r := range rec {
+        if r.Account.AccountNo != accountNum {
+            newRec = append(newRec, r)
+        }
+    }
+
+    *records = newRec
+}

@@ -14,6 +14,10 @@ type CmdFlags struct {
 	Info        string
 	ListAccounts string
 	ListRecords bool
+	AllAccounts bool
+	DeleteAccount string
+	ChangeUsername string
+	ChangeAccountNum string
 	New 		string
 }
 
@@ -24,7 +28,11 @@ func NewCmdFlag() *CmdFlags {
 	flag.StringVar(&cf.Info, "info", "", "print out the account info")
 	flag.StringVar(&cf.ListAccounts, "list", "", "list all the records specify account-number ")
 	flag.BoolVar(&cf.ListRecords, "record", false, "list all records")
+	flag.BoolVar(&cf.AllAccounts, "acc", false, "list all available account")
 	flag.StringVar(&cf.New, "new", "", "create new account by username:account-number:initail-balance")
+	flag.StringVar(&cf.DeleteAccount, "del", "", "delete account by account number")
+	flag.StringVar(&cf.ChangeAccountNum, "changeNum", "", "change account number old:new")
+	flag.StringVar(&cf.ChangeUsername, "username", "", "change account holdername name:number")
 	flag.Parse()
 	return &cf
 }
@@ -74,10 +82,23 @@ func (cf *CmdFlags) Execute(records *Records, accounts *Accounts) {
 		account_number := parts[1]
 		username := parts[0]
 		initial_balance, err := strconv.Atoi(parts[2])
-		accounts.createNewAccount(username, account_number, initial_balance)
 		if err != nil {
 			fmt.Println("invalid initial balance")
+			return
 		}
+		accounts.createNewAccount(username, account_number, initial_balance)
+	case cf.AllAccounts:
+		accounts.printAllAccount()
+	case cf.DeleteAccount != "":
+		if err := accounts.deleteAccount(cf.DeleteAccount); err != nil {
+			fmt.Println("account does not exist")
+		}
+	case cf.ChangeAccountNum != "":
+		parts := strings.SplitN(cf.ChangeAccountNum, ":", 2)
+		accounts.changeAccountNumber(parts[0], parts[1])
+	case cf.ChangeUsername != "":
+		parts := strings.SplitN(cf.ChangeUsername, ":", 2)
+		accounts.changeAccountUsername(parts[0], parts[1] )
 	default:
 		fmt.Println("invalid command")
 	}	
